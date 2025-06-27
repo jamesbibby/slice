@@ -338,6 +338,38 @@ at your option.
 
 Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
 
+## Development
+
+### AI-Assisted Development
+
+This project was entirely "vibe coded" using AI assistance! 🤖✨
+
+**Development Stack:**
+- **IDE**: [Cursor](https://cursor.sh/) - AI-powered code editor
+- **AI Assistant**: Claude Sonnet 4 (Anthropic)
+- **Approach**: Conversational development with AI pair programming
+
+**What "Vibe Coded" Means:**
+This LSM tree implementation was built through natural language conversations with AI, starting from high-level concepts and iteratively refining the implementation. The AI assistant helped with:
+
+- Architecture design and data structure choices
+- Implementation of complex algorithms (LSM compaction, Bloom filters, LRU cache)
+- Multi-threaded compaction system design
+- Comprehensive testing strategies (unit tests, correctness tests, benchmarks)
+- Performance optimization and code quality improvements
+- Documentation and examples
+
+**Why This Approach Works:**
+- **Rapid Prototyping**: From concept to working LSM tree in hours, not days
+- **Best Practices**: AI knowledge of Rust idioms and database internals
+- **Comprehensive Testing**: AI suggested industry-standard test methodologies
+- **Documentation**: AI helped create thorough documentation and examples
+- **Code Quality**: Automated suggestions for clippy fixes and optimizations
+
+The result is a production-quality LSM tree implementation with features that would typically take much longer to develop manually, including standardized benchmarks, correctness tests, and multi-threaded compaction.
+
+*This demonstrates the power of AI-assisted development for complex systems programming projects.*
+
 ## Technical Details
 
 ### Components
