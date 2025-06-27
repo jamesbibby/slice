@@ -418,11 +418,11 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## Future Improvements
 
-- [ ] Bloom filters for faster negative lookups
+- [x] Bloom filters for faster negative lookups ✅
+- [x] Multi-threaded compaction ✅
 - [ ] Block-based SSTable format
 - [ ] Compression support
 - [ ] Range queries and iterators
 - [ ] Snapshot isolation
 - [ ] Metrics and monitoring
-- [ ] Configurable compaction strategies
-- [ ] Multi-threaded compaction 
+- [ ] Configurable compaction strategies 
