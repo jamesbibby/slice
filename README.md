@@ -92,6 +92,42 @@ async fn main() -> slice::Result<()> {
 }
 ```
 
+### Multi-threaded Compaction
+
+Configure multi-threaded compaction for better performance:
+
+```rust
+use slice::{LSMTree, compaction::CompactionConfig};
+
+#[tokio::main]
+async fn main() -> slice::Result<()> {
+    // Configure multi-threaded compaction
+    let compaction_config = CompactionConfig {
+        max_concurrent_compactions: 4,  // Allow up to 4 concurrent compactions
+        merge_parallelism: 8,           // Use 8 parallel merge tasks
+        max_sstables_per_job: 5,        // Limit job size for better parallelism
+        enable_parallel_merge: true,    // Enable parallel merging
+    };
+    
+    // Create LSM tree with custom compaction configuration
+    let lsm = LSMTree::new_with_config(
+        "./data",
+        1000,  // cache size
+        compaction_config
+    ).await?;
+    
+    // Check compaction statistics
+    let stats = lsm.stats();
+    println!("Compaction stats:");
+    println!("  Total compactions: {}", stats.compaction_stats.total_compactions);
+    println!("  Active compactions: {}", stats.compaction_stats.concurrent_compactions);
+    println!("  Parallel merges: {}", stats.compaction_stats.parallel_merges);
+    println!("  Bytes compacted: {} MB", stats.compaction_stats.bytes_compacted / 1024 / 1024);
+    
+    Ok(())
+}
+```
+
 ### Concurrent Writes
 
 ```rust
@@ -181,6 +217,8 @@ Example benchmark categories:
 
 ## Configuration
 
+### Basic Configuration
+
 Key configuration parameters:
 
 - **Cache Size**: Default 1000 entries (configurable via `new_with_cache_size`)
@@ -188,6 +226,27 @@ Key configuration parameters:
 - **Max Levels**: Default 7 levels
 - **Compaction Frequency**: Every 10 seconds
 - **Flush Frequency**: Every 1 second
+
+### Multi-threaded Compaction Configuration
+
+Configure compaction parallelism for optimal performance:
+
+```rust
+use slice::compaction::CompactionConfig;
+
+let config = CompactionConfig {
+    max_concurrent_compactions: 4,  // Number of parallel compaction workers (default: 2)
+    merge_parallelism: 8,           // Parallel merge tasks within a compaction (default: 4)
+    max_sstables_per_job: 10,       // Max SSTables per compaction job (default: 10)
+    enable_parallel_merge: true,    // Enable parallel merging (default: true)
+};
+```
+
+**Configuration Guidelines:**
+- **max_concurrent_compactions**: Set to number of CPU cores for I/O bound workloads
+- **merge_parallelism**: Higher values improve large compaction performance but use more memory
+- **max_sstables_per_job**: Smaller values improve parallelism, larger values reduce overhead
+- **enable_parallel_merge**: Disable for very small datasets or memory-constrained systems
 
 ## File Structure
 
@@ -251,6 +310,13 @@ See [CORRECTNESS_TESTS.md](CORRECTNESS_TESTS.md) for detailed documentation.
 
 ```bash
 cargo run
+```
+
+### Running Examples
+
+```bash
+# Run the multi-threaded compaction example
+cargo run --example multi_threaded_compaction
 ```
 
 ### Running Benchmarks

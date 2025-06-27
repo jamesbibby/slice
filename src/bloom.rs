@@ -28,7 +28,7 @@ impl BloomFilter {
         
         // Calculate optimal number of hash functions: k = (m/n) * ln(2)
         let hash_functions = ((bits as f64 / expected_keys as f64) * 2.0_f64.ln()).round() as usize;
-        let hash_functions = hash_functions.max(1).min(10); // Reasonable bounds
+        let hash_functions = hash_functions.clamp(1, 10); // Reasonable bounds
         
         Self::new(bits, hash_functions)
     }

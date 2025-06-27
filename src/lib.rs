@@ -20,7 +20,7 @@ mod tests {
     #[tokio::test]
     async fn test_basic_operations() {
         let temp_dir = TempDir::new().unwrap();
-        let mut lsm = LSMTree::new(temp_dir.path()).await.unwrap();
+        let lsm = LSMTree::new(temp_dir.path()).await.unwrap();
         
         // Test put and get
         lsm.put(b"key1", b"value1").await.unwrap();

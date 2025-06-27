@@ -160,7 +160,7 @@ impl StorageManager {
         let levels = self.levels.read();
         let mut stats = Vec::new();
         
-        for (level, tables) in levels.iter().enumerate() {
+        for tables in levels.iter() {
             for table in tables {
                 let (size, hash_functions, fpr) = table.bloom_filter_stats();
                 stats.push((size, hash_functions, fpr));

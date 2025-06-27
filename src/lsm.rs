@@ -7,7 +7,7 @@ use crate::error::Result;
 use crate::memtable::{MemTable, Value};
 use crate::wal::WriteAheadLog;
 use crate::storage::StorageManager;
-use crate::compaction::CompactionManager;
+use crate::compaction::{CompactionManager, CompactionConfig, CompactionStats};
 
 const DEFAULT_MEMTABLE_SIZE: usize = 64 * 1024 * 1024; // 64MB
 const DEFAULT_MAX_LEVELS: usize = 7;
@@ -42,13 +42,21 @@ impl LSMTree {
     }
     
     pub async fn new_with_cache_size<P: AsRef<Path>>(data_dir: P, cache_size: usize) -> Result<Self> {
+        Self::new_with_config(data_dir, cache_size, CompactionConfig::default()).await
+    }
+    
+    pub async fn new_with_config<P: AsRef<Path>>(
+        data_dir: P, 
+        cache_size: usize, 
+        compaction_config: CompactionConfig
+    ) -> Result<Self> {
         let data_dir = data_dir.as_ref();
         std::fs::create_dir_all(data_dir)?;
         
         // Initialize components
         let wal = Arc::new(WriteAheadLog::new(data_dir)?);
         let storage = Arc::new(StorageManager::new_with_cache_size(data_dir, DEFAULT_MAX_LEVELS, cache_size)?);
-        let compaction = Arc::new(CompactionManager::new(storage.clone()));
+        let compaction = Arc::new(CompactionManager::new_with_config(storage.clone(), compaction_config));
         
         let active_memtable = Arc::new(AsyncRwLock::new(MemTable::new(DEFAULT_MEMTABLE_SIZE)));
         let immutable_memtables = Arc::new(RwLock::new(Vec::new()));
@@ -182,16 +190,22 @@ impl LSMTree {
         let level_stats = self.storage.get_level_stats();
         let immutable_count = self.immutable_memtables.read().len();
         let cache_stats = self.storage.cache_stats();
+        let compaction_stats = self.compaction.stats();
         
         LSMStats {
             level_stats,
             immutable_memtables: immutable_count,
             cache_stats,
+            compaction_stats,
         }
     }
     
     pub fn clear_cache(&self) {
         self.storage.clear_cache();
+    }
+    
+    pub fn compaction_config(&self) -> &CompactionConfig {
+        self.compaction.config()
     }
     
     async fn maybe_flush_memtable(&self) -> Result<()> {
@@ -309,6 +323,7 @@ pub struct LSMStats {
     pub level_stats: Vec<(usize, usize, u64)>, // (level, count, size)
     pub immutable_memtables: usize,
     pub cache_stats: crate::cache::CacheStats,
+    pub compaction_stats: CompactionStats,
 }
 
 impl LSMStats {
@@ -322,5 +337,11 @@ impl LSMStats {
         println!("  Cache: {} / {} entries", 
                 self.cache_stats.size, 
                 self.cache_stats.capacity);
+        println!("  Compaction:");
+        println!("    Total compactions: {}", self.compaction_stats.total_compactions);
+        println!("    Active compactions: {}", self.compaction_stats.concurrent_compactions);
+        println!("    Bytes compacted: {} MB", self.compaction_stats.bytes_compacted / 1024 / 1024);
+        println!("    SSTables compacted: {}", self.compaction_stats.sstables_compacted);
+        println!("    Parallel merges: {}", self.compaction_stats.parallel_merges);
     }
 } 

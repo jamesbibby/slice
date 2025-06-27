@@ -48,6 +48,12 @@ pub struct LinearizabilityChecker {
     history: Vec<HistoryEvent>,
 }
 
+impl Default for LinearizabilityChecker {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl LinearizabilityChecker {
     pub fn new() -> Self {
         Self {
@@ -307,16 +313,13 @@ impl ConsistencyTester {
             (read1, read2)
         });
 
-        let _ = handle1.await.map_err(|e| e.to_string())?;
+        handle1.await.map_err(|e| e.to_string())?;
         let (read1, read2) = handle2.await.map_err(|e| e.to_string())?;
 
         // Sequential consistency allows: (None, None), (None, A), (None, B), (A, A), (A, B), (B, B)
         // But NOT (B, A) - that would violate program order
-        match (read1.as_deref(), read2.as_deref()) {
-            (Some(b"B"), Some(b"A")) => {
-                return Err("Sequential consistency violation: saw B then A".to_string());
-            }
-            _ => {} // All other combinations are valid
+        if let (Some(b"B"), Some(b"A")) = (read1.as_deref(), read2.as_deref()) {
+            return Err("Sequential consistency violation: saw B then A".to_string());
         }
 
         Ok(())

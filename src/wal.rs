@@ -1,5 +1,5 @@
 use std::fs::{File, OpenOptions};
-use std::io::{BufReader, BufWriter, Read, Seek, SeekFrom, Write};
+use std::io::{BufReader, BufWriter, Read, Write};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use parking_lot::Mutex;
@@ -50,15 +50,13 @@ impl WriteAheadLog {
         let mut found_any = false;
         
         if let Ok(entries) = std::fs::read_dir(data_dir) {
-            for entry in entries {
-                if let Ok(entry) = entry {
-                    if let Some(name) = entry.file_name().to_str() {
-                        if name.starts_with("wal_") && name.ends_with(".log") {
-                            if let Some(id_str) = name.strip_prefix("wal_").and_then(|s| s.strip_suffix(".log")) {
-                                if let Ok(id) = id_str.parse::<u64>() {
-                                    max_id = max_id.max(id);
-                                    found_any = true;
-                                }
+            for entry in entries.flatten() {
+                if let Some(name) = entry.file_name().to_str() {
+                    if name.starts_with("wal_") && name.ends_with(".log") {
+                        if let Some(id_str) = name.strip_prefix("wal_").and_then(|s| s.strip_suffix(".log")) {
+                            if let Ok(id) = id_str.parse::<u64>() {
+                                max_id = max_id.max(id);
+                                found_any = true;
                             }
                         }
                     }
@@ -114,14 +112,12 @@ impl WriteAheadLog {
         // Find all WAL files and sort them by ID
         let mut wal_files = Vec::new();
         if let Ok(entries) = std::fs::read_dir(&self.data_dir) {
-            for entry in entries {
-                if let Ok(entry) = entry {
-                    if let Some(name) = entry.file_name().to_str() {
-                        if name.starts_with("wal_") && name.ends_with(".log") {
-                            if let Some(id_str) = name.strip_prefix("wal_").and_then(|s| s.strip_suffix(".log")) {
-                                if let Ok(id) = id_str.parse::<u64>() {
-                                    wal_files.push((id, entry.path()));
-                                }
+            for entry in entries.flatten() {
+                if let Some(name) = entry.file_name().to_str() {
+                    if name.starts_with("wal_") && name.ends_with(".log") {
+                        if let Some(id_str) = name.strip_prefix("wal_").and_then(|s| s.strip_suffix(".log")) {
+                            if let Ok(id) = id_str.parse::<u64>() {
+                                wal_files.push((id, entry.path()));
                             }
                         }
                     }
@@ -133,7 +129,7 @@ impl WriteAheadLog {
         wal_files.sort_by_key(|(id, _)| *id);
         
         // Replay each WAL file
-        for (wal_id, wal_path) in wal_files {
+        for (_wal_id, wal_path) in wal_files {
             println!("Replaying WAL file: {:?}", wal_path);
             let entries = self.replay_single_wal(&wal_path)?;
             all_entries.extend(entries);

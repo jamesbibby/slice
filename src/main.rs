@@ -1,6 +1,4 @@
 use slice::{LSMTree, Result};
-use std::sync::Arc;
-use tokio::time::{Duration, sleep};
 use std::time::Instant;
 
 #[tokio::main]
