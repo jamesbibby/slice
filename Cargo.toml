@@ -2,6 +2,13 @@
 name = "slice"
 version = "0.1.0"
 edition = "2021"
+authors = ["James Bibby"]
+license = "MIT OR Apache-2.0"
+description = "A high-performance LSM (Log-Structured Merge) tree key-value store with multi-threaded compaction, LRU cache, and Bloom filters"
+repository = "https://github.com/jamesbibby/slice"
+keywords = ["database", "lsm", "key-value", "storage", "btree"]
+categories = ["database-implementations", "data-structures"]
+readme = "README.md"
 
 [dependencies]
 tokio = { version = "1.0", features = ["full"] }
