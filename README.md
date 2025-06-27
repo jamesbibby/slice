@@ -215,7 +215,14 @@ cargo build --release
 ### Testing
 
 ```bash
+# Run all tests
 cargo test
+
+# Run unit and integration tests
+cargo test --lib
+
+# Run standardized correctness tests
+cargo test --test correctness_tests
 ```
 
 #### Comprehensive Test Coverage
@@ -227,6 +234,18 @@ The test suite includes critical durability and crash recovery tests:
 - **WAL Recovery with Deletions**: Ensures tombstones are properly recovered  
 - **Concurrent Writes During Recovery**: Tests system stability during recovery
 - **Crash Safety**: Verifies no data loss in various failure scenarios
+
+#### Standardized Correctness Tests
+
+Industry-standard correctness tests verify system reliability:
+
+- **Linearizability Testing**: Jepsen-style history checking for concurrent operations
+- **ACID Compliance**: Atomicity, Consistency, Isolation, and Durability verification
+- **Consistency Models**: Sequential consistency, Read-Your-Writes, Monotonic reads
+- **Fault Injection**: Concurrent operations with random delays and crash recovery
+- **Crash Recovery**: Data durability and system resilience testing
+
+See [CORRECTNESS_TESTS.md](CORRECTNESS_TESTS.md) for detailed documentation.
 
 ### Running the Demo
 
